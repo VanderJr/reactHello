@@ -8,81 +8,129 @@ import Form from 'react-bootstrap/Form';
 import FloatingLabel from 'react-bootstrap/FloatingLabel';
 import Table from 'react-bootstrap/Table';
 import Card from 'react-bootstrap/Card';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FaPen } from 'react-icons/fa';
 import { FaTrash } from 'react-icons/fa';
 import './App.css';
 
 
-const dados = [];
+const profissoes = {
+  0: 'Desenvolvedor Back-end',
+  1: 'Desenvolvedor Front-end',
+  2: 'Desenvolvedor Mobile',
+  3: 'Desenvolvedor Full-stack'
+};
+
 
 function App() {
-  const profissao = {
-    0: 'Desenvolvedor Back-end',
-    1: 'Desenvolvedor Front-end',
-    2: 'Desenvolvedor Mobile',
-    3: 'Desenvolvedor Full-stack'
-  };
+
+  const [profissao, setProfissao] = useState(0);
+  const [nome, setNome] = useState("");
+  const [id, setId] = useState();
+  const [salario, setSalario] = useState("");
+  const [filtro, setFiltro] = useState("");
+  const [dadosFiltrados, setDadosFiltrados] = useState([]);
+  const [dados, setDados] = useState([]);
+  const [btn, setBtn] = useState("Criar");
 
 
-  const [dadosFiltrados, setdadosFiltrados] = useState([]);
-
-  function cancelar() {
-    document.getElementById('nome').value = '';
-    document.getElementById('salario').value = '';
-    document.getElementById('profissao').value = 0;
-    document.getElementById('btnCriar').innerText = 'Criar';
+  const cancelar = () => {
+    cleanInput();
   }
 
-  const editar = event => {
-    document.getElementById('btnCriar').innerText = 'Atualizar';
-    let id = event.currentTarget.dataset.id;
-    document.getElementById('nome').value = dados[id].nome;
-    document.getElementById('salario').value = dados[id].salario;
-    document.getElementById('profissao').value = dados[id].profissao; 
-    dados.splice(id, 1);
-    filtrar();
+  const editar = (i) => {
+    setId(i);
+    dados.map((a) => {
+      if (a.id == i) {
+        setNome(a.nome);
+        setSalario(a.salario);
+        setProfissao(a.profissao);
+      }
+      return true;
+    });
   }
 
-
-  const apagar = event => {
-    if (window.confirm("Deseja apagar o registro?")) {
-      dados.splice(event.currentTarget.dataset.id, 1);
-      filtrar();
-    }
-  }
-
-  function filtrar() {
-    const filtro = document.getElementById('filtro').value;
-    const filtroProfissao = Object.keys(profissao).filter(k => profissao[k].includes(filtro));
-    const filtrados = dados.filter(arr => arr.nome.includes(filtro) || filtroProfissao.includes(arr.profissao.toString()));
-    if (filtrados === undefined) {
-      setdadosFiltrados([]);
+  useEffect(() => {
+    const filtroProfissoes = Object.keys(profissoes).filter(k => profissoes[k].toLowerCase().includes(filtro.toLowerCase()));
+    const filtrados = dados.filter(arr => arr.nome.toLowerCase().includes(filtro.toLowerCase()) || filtroProfissoes.includes(arr.profissao.toString()));
+    if (filtrados == null) {
+      setDadosFiltrados([]);
     } else {
-      setdadosFiltrados([...filtrados]);
+      setDadosFiltrados([...filtrados]);
+    }
+  }, [filtro, dados]);
+
+  useEffect(() => {
+    if(id == null){
+      setBtn('Criar');
+    }else{
+      setBtn('Atualizar');
+    }
+  }, [id]);
+
+
+  const apagar = (id) => {
+    if (window.confirm("Deseja apagar o registro?")) {
+      setDados(
+        dados.filter((a) => {
+          if (a.id !== id) {
+            return a;
+          }
+          return false;
+        })
+      );
     }
   }
 
-  function cadastrar() {
-    const cadastro = {
-      nome: document.getElementById('nome').value,
-      profissao: Number(document.getElementById('profissao').value),
-      salario: Number(document.getElementById('salario').value)
-    }
-    dados.push(cadastro);
-    document.getElementById('nome').value = '';
-    document.getElementById('salario').value = '';
-    document.getElementById('profissao').value = 0;
-    document.getElementById('btnCriar').innerText = 'Criar';
-
-    filtrar();
-
+  const nomeChange = event => {
+    setNome(event.target.value);
+  }
+  const salarioChange = event => {
+    setSalario(event.target.value);
+  }
+  const profissaoChange = event => {
+    setProfissao(event.target.value);
+  }
+  const filtroChange = event => {
+    setFiltro(event.target.value);
   }
 
-  let total = dadosFiltrados.reduce(function (prev, current) {
+  const cadastrar = () => {
+    if(id == null){
+      const cadastro = {
+        id: Date.now(),
+        nome: nome,
+        profissao: profissao,
+        salario: salario
+      }
+      setDados([...dados, cadastro]);
+    }else{
+      const cadastro = {
+        id: id,
+        nome: nome,
+        profissao: profissao,
+        salario: salario
+      }
+      const novo = dados.filter((a) => {
+        if (a.id !== id) {
+          return a;
+        }
+        return false;
+      });
+      setDados([...novo, cadastro]);
+    }
+    cleanInput();
+  }
+
+  const cleanInput = () => {
+    setNome('');
+    setSalario('');
+    setId();
+  }
+
+  const total = dadosFiltrados.reduce((prev, current) => {
     return prev + +current.salario
   }, 0);
-
 
   return (
     <div className="App">
@@ -93,37 +141,34 @@ function App() {
           </h5>
         </Stack>
         <Row className="g-0 mb-1" md={5} >
-
           <Col md>
             <FloatingLabel label="Nome">
-              <Form.Control id="nome" type="text" placeholder="Nome" />
+              <Form.Control id="nome" value={nome} onChange={nomeChange} type="text" placeholder="Nome" />
             </FloatingLabel>
           </Col>
           <Col md>
             <FloatingLabel label="Profissão">
-              <Form.Select id="profissao">
-                {Object.keys(profissao).map(key => (
-                  <option value={key} key={key}>{profissao[key]}</option>))}
+              <Form.Select id="profissao" value={profissao} onChange={profissaoChange}>
+                {Object.keys(profissoes).map(key => (
+                  <option value={key} key={key}>{profissoes[key]}</option>))}
               </Form.Select>
             </FloatingLabel>
           </Col>
           <Col md>
             <FloatingLabel label="Salário">
-              <Form.Control id="salario" type="number" placeholder="Salário" />
+              <Form.Control id="salario" value={salario} onChange={salarioChange} type="number" placeholder="Salário" />
             </FloatingLabel>
           </Col>
         </Row>
-
         <Stack className="col-12 m-1" direction="horizontal" gap={2}>
-          <Button variant="primary" size="lg" onClick={() => cancelar()}>Cancelar</Button>
-          <Button id='btnCriar' variant="success" size="lg" className="ms-auto" onClick={() => cadastrar()}>Criar</Button>
+          <Button variant="primary" size="lg" onClick={cancelar}>Cancelar</Button>
+          <Button id='btnCriar' variant="success" size="lg" className="ms-auto" onClick={cadastrar}>{btn}</Button>
         </Stack>
-
         <Card >
           <Row className="g-0 m-2" xs={5} md={5} lg={5}>
             <Col md>
               <FloatingLabel label="Filtrar por nome ou profissão... ">
-                <Form.Control id="filtro" type="text" onChange={filtrar} placeholder="Filtrar por nome ou profissão... " />
+                <Form.Control id="filtro" type="text" value={filtro} onChange={filtroChange} placeholder="Filtrar por nome ou profissão... " />
               </FloatingLabel>
             </Col>
           </Row>
@@ -138,14 +183,13 @@ function App() {
               </tr>
             </thead>
             <tbody>
-
-              {dadosFiltrados.map((reg, index) => (
-                <tr >
+              {dadosFiltrados.map((reg) => (
+                <tr key={reg.id}>
                   <td >{reg.nome}</td>
-                  <td >{profissao[reg.profissao]}</td>
+                  <td >{profissoes[reg.profissao]}</td>
                   <td >{reg.salario}</td>
-                  <td ><FaPen data-id={index} onClick={editar} /></td>
-                  <td ><FaTrash data-id={index} onClick={apagar} /></td>
+                  <td ><FaPen onClick={() => editar(reg.id)} /></td>
+                  <td ><FaTrash onClick={() => apagar(reg.id)} /></td>
                 </tr>
               ))}
             </tbody>
@@ -156,8 +200,6 @@ function App() {
           </h5>
         </Stack>
       </Container>
-
-
     </div>
   );
 }
