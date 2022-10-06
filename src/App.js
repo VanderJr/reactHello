@@ -8,13 +8,13 @@ import Form from 'react-bootstrap/Form';
 import FloatingLabel from 'react-bootstrap/FloatingLabel';
 import Table from 'react-bootstrap/Table';
 import Card from 'react-bootstrap/Card';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { FaPen } from 'react-icons/fa';
 import { FaTrash } from 'react-icons/fa';
 import './App.css';
 
 
-const profissoes = {
+const professions = {
   0: 'Desenvolvedor Back-end',
   1: 'Desenvolvedor Front-end',
   2: 'Desenvolvedor Mobile',
@@ -24,113 +24,71 @@ const profissoes = {
 
 function App() {
 
-  const [profissao, setProfissao] = useState(0);
-  const [nome, setNome] = useState("");
+  const [profession, setProfession] = useState(0);
+  const [name, setName] = useState("");
   const [id, setId] = useState();
-  const [salario, setSalario] = useState("");
-  const [filtro, setFiltro] = useState("");
-  const [dadosFiltrados, setDadosFiltrados] = useState([]);
-  const [dados, setDados] = useState([]);
-  const [btn, setBtn] = useState("Criar");
+  const [salary, setSalary] = useState("");
+  const [filter, setFilter] = useState("");
+  const [employees, setEmployees] = useState([]);
 
-
-  const cancelar = () => {
-    cleanInput();
+  const edit = (objectEmployee) => {
+    setId(objectEmployee.id);
+    setName(objectEmployee.name);
+    setSalary(objectEmployee.salary);
+    setProfession(objectEmployee.profession);
   }
 
-  const editar = (i) => {
-    setId(i);
-    dados.map((a) => {
-      if (a.id == i) {
-        setNome(a.nome);
-        setSalario(a.salario);
-        setProfissao(a.profissao);
-      }
-      return true;
-    });
-  }
-
-  useEffect(() => {
-    const filtroProfissoes = Object.keys(profissoes).filter(k => profissoes[k].toLowerCase().includes(filtro.toLowerCase()));
-    const filtrados = dados.filter(arr => arr.nome.toLowerCase().includes(filtro.toLowerCase()) || filtroProfissoes.includes(arr.profissao.toString()));
-    if (filtrados == null) {
-      setDadosFiltrados([]);
-    } else {
-      setDadosFiltrados([...filtrados]);
-    }
-  }, [filtro, dados]);
-
-  useEffect(() => {
-    if(id == null){
-      setBtn('Criar');
-    }else{
-      setBtn('Atualizar');
-    }
-  }, [id]);
-
-
-  const apagar = (id) => {
+  const del = (objectEmployee) => {
     if (window.confirm("Deseja apagar o registro?")) {
-      setDados(
-        dados.filter((a) => {
-          if (a.id !== id) {
-            return a;
-          }
-          return false;
-        })
+      setEmployees(
+        employees.filter((a) => a.id !== objectEmployee.id)
       );
     }
   }
 
-  const nomeChange = event => {
-    setNome(event.target.value);
+  const handleChangeName = event => {
+    setName(event.target.value);
   }
-  const salarioChange = event => {
-    setSalario(event.target.value);
+  const handleChangeSalary = event => {
+    setSalary(event.target.value);
   }
-  const profissaoChange = event => {
-    setProfissao(event.target.value);
+  const handleChangeprofession = event => {
+    setProfession(event.target.value);
   }
-  const filtroChange = event => {
-    setFiltro(event.target.value);
+  const handleChangeFilter = event => {
+    setFilter(event.target.value);
   }
 
-  const cadastrar = () => {
-    if(id == null){
-      const cadastro = {
+  const registration = () => {
+    if (id == null) {
+      const register = {
         id: Date.now(),
-        nome: nome,
-        profissao: profissao,
-        salario: salario
+        name: name,
+        profession: profession,
+        salary: salary
       }
-      setDados([...dados, cadastro]);
-    }else{
-      const cadastro = {
-        id: id,
-        nome: nome,
-        profissao: profissao,
-        salario: salario
-      }
-      const novo = dados.filter((a) => {
-        if (a.id !== id) {
-          return a;
-        }
-        return false;
-      });
-      setDados([...novo, cadastro]);
+      setEmployees([...employees, register]);
+    } else {
+      setEmployees(employees.map(employee =>
+        employee.id === id ? {
+          id: id, name: name, profession: profession, salary: salary
+        } : employee
+      ));
     }
     cleanInput();
   }
 
   const cleanInput = () => {
-    setNome('');
-    setSalario('');
+    setName('');
+    setSalary('');
     setId();
   }
 
-  const total = dadosFiltrados.reduce((prev, current) => {
-    return prev + +current.salario
-  }, 0);
+  const filtered = employees.filter(employee => 
+    {
+      return employee.name.toLowerCase().includes(filter.toLowerCase()) || professions[employee.profession].toLowerCase().includes(filter.toLowerCase());
+    });
+
 
   return (
     <div className="App">
@@ -142,33 +100,33 @@ function App() {
         </Stack>
         <Row className="g-0 mb-1" md={5} >
           <Col md>
-            <FloatingLabel label="Nome">
-              <Form.Control id="nome" value={nome} onChange={nomeChange} type="text" placeholder="Nome" />
+            <FloatingLabel label="Name">
+              <Form.Control id="name" value={name} onChange={handleChangeName} type="text" placeholder="Name" />
             </FloatingLabel>
           </Col>
           <Col md>
             <FloatingLabel label="Profissão">
-              <Form.Select id="profissao" value={profissao} onChange={profissaoChange}>
-                {Object.keys(profissoes).map(key => (
-                  <option value={key} key={key}>{profissoes[key]}</option>))}
+              <Form.Select id="profession" value={profession} onChange={handleChangeprofession}>
+                {Object.keys(professions).map(key => (
+                  <option value={key} key={key}>{professions[key]}</option>))}
               </Form.Select>
             </FloatingLabel>
           </Col>
           <Col md>
             <FloatingLabel label="Salário">
-              <Form.Control id="salario" value={salario} onChange={salarioChange} type="number" placeholder="Salário" />
+              <Form.Control id="salary" value={salary} onChange={handleChangeSalary} type="number" placeholder="Salário" />
             </FloatingLabel>
           </Col>
         </Row>
         <Stack className="col-12 m-1" direction="horizontal" gap={2}>
-          <Button variant="primary" size="lg" onClick={cancelar}>Cancelar</Button>
-          <Button id='btnCriar' variant="success" size="lg" className="ms-auto" onClick={cadastrar}>{btn}</Button>
+          <Button variant="primary" size="lg" onClick={cleanInput}>Cancelar</Button>
+          <Button id='btnCriar' variant="success" size="lg" className="ms-auto" onClick={registration}>{id ? "Atualizar" : "Criar"}</Button>
         </Stack>
         <Card >
           <Row className="g-0 m-2" xs={5} md={5} lg={5}>
             <Col md>
-              <FloatingLabel label="Filtrar por nome ou profissão... ">
-                <Form.Control id="filtro" type="text" value={filtro} onChange={filtroChange} placeholder="Filtrar por nome ou profissão... " />
+              <FloatingLabel label="Filtrar por name ou profissão... ">
+                <Form.Control id="filter" type="text" value={filter} onChange={handleChangeFilter} placeholder="Filtrar por name ou profissão... " />
               </FloatingLabel>
             </Col>
           </Row>
@@ -183,20 +141,22 @@ function App() {
               </tr>
             </thead>
             <tbody>
-              {dadosFiltrados.map((reg) => (
-                <tr key={reg.id}>
-                  <td >{reg.nome}</td>
-                  <td >{profissoes[reg.profissao]}</td>
-                  <td >{reg.salario}</td>
-                  <td ><FaPen onClick={() => editar(reg.id)} /></td>
-                  <td ><FaTrash onClick={() => apagar(reg.id)} /></td>
+              {filtered.map((employee) => (
+                <tr key={employee.id}>
+                  <td >{employee.name}</td>
+                  <td >{professions[employee.profession]}</td>
+                  <td >{employee.salary}</td>
+                  <td ><FaPen onClick={() => edit(employee)} /></td>
+                  <td ><FaTrash onClick={() => del(employee)} /></td>
                 </tr>
               ))}
             </tbody>
           </Table></Card>
         <Stack className='float-end' direction="horizontal" gap={2}>
           <h5 className='float-end'>
-            Folha de pagamento total: {total}
+            Folha de pagamento total: {filtered.reduce((prev, current) => {
+              return prev + +current.salary
+            }, 0)}
           </h5>
         </Stack>
       </Container>
