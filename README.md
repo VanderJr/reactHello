@@ -1,3 +1,3 @@
 
 ### `npm start`
-Abra [http://localhost:3000](http://localhost:3000) no seu navegador.
+Abra [http://localhost:3006](http://localhost:3006) no seu navegador.
