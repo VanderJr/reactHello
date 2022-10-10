@@ -19,13 +19,13 @@
       "name": "Vander Junior",
       "profession": "2",
       "salary": "789",
-      "active": true
+      "active": false
     },
     {
-      "id": 1665153417355,
-      "name": "asdasd",
-      "profession": "1",
-      "salary": "123",
+      "id": 1665165172505,
+      "name": "Vander",
+      "profession": "2",
+      "salary": "10",
       "active": true
     }
   ]
