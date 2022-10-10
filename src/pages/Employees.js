@@ -26,7 +26,7 @@ export async function loader({ params }) {
 
 export default function Employees() {
 
-    const employee = useLoaderData();    
+    const employee = useLoaderData();
 
     const [profession, setProfession] = useState(0);
     const [name, setName] = useState("");
@@ -82,8 +82,11 @@ export default function Employees() {
         setActive(objectEmployee.active);
     }
     useEffect(() => {
-        if(employee) edit(employee);
-      }, [employee]); 
+        if (employee) {
+            edit(employee)
+        }
+        
+    }, [employee]);
 
     return (<>
         <Stack direction="horizontal" gap={2}>
